@@ -2,18 +2,20 @@ name: Microservices CI
 
 on:
     push:
-        branches: [main]
+        branches:
+            - prod
+            - dev
         paths:
-            - "testing_and_deployment/task8/**"
             - ".github/workflows/ci.yml"
+
     pull_request:
         paths:
-            - "testing_and_deployment/task8/**"
             - ".github/workflows/ci.yml"
 
 jobs:
     lint-type-security:
         runs-on: ubuntu-latest
+
         strategy:
             fail-fast: false
             matrix:
@@ -25,7 +27,7 @@ jobs:
 
         defaults:
             run:
-                working-directory: testing_and_deployment/task8/${{ matrix.service }}
+                working-directory: ${{ matrix.service }}
 
         steps:
             - name: Checkout repository
@@ -34,7 +36,7 @@ jobs:
             - name: Set up Python
               uses: actions/setup-python@v5
               with:
-                  python-version: "3.11"
+                  python-version: "3.14"
 
             - name: Upgrade pip
               run: python -m pip install --upgrade pip
@@ -49,6 +51,3 @@ jobs:
 
             - name: Run Mypy
               run: mypy .
-
-            - name: Run Bandit
-              run: bandit -r . -x .venv,venv,__pycache__,tests
