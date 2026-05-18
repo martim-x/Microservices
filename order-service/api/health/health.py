@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 
-from api.app import health_router
+from api.health.core import health_router
 from fastapi import Request, Response, status
 
 

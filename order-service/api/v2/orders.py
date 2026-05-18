@@ -1,12 +1,12 @@
-from api.app import (
+from api.dependencies.limiter import limiter
+from api.dependencies.services import (
     get_message_queue_service,
     get_order_cache_service,
     get_order_write_service,
     get_service_token_service,
-    limiter,
-    v2_router,
 )
 from api.settings import settings
+from api.v2.core import v2_router
 from database.schemas import OrderCreate, OrderOut, ReportCreate
 from fastapi import Depends, Request, status
 from services.a_message_queue_service import AMessageQueueService

@@ -1,12 +1,12 @@
-from api.app import (
-    cache_dep,
+from api.dependencies.cache import cache_dep
+from api.dependencies.limiter import limiter
+from api.dependencies.services import (
     get_order_read_service,
     get_order_write_service,
     get_service_token_service,
-    limiter,
-    v1_router,
 )
 from api.settings import settings
+from api.v1.core import v1_router
 from database.schemas import OrderCreate, OrderOut
 from fastapi import Depends, Request, status
 from services.a_order_service import AOrderService

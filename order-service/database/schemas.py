@@ -1,8 +1,7 @@
-import html
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field
 
 # ─── BaseSchema ───────────────────────────────────────────────────────────────
 
