@@ -1,0 +1,550 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: back-end-dev
+---
+apiVersion: v1
+kind: Secret
+metadata:
+    name: backend-secrets
+    namespace: back-end-dev
+type: Opaque
+stringData:
+    DB_ADMIN_PASS: "111"
+    RABBITMQ_DEFAULT_USER: "rabbit"
+    RABBITMQ_DEFAULT_PASS: "rabbit"
+    SECRET_KEY: "jAN2a9EPGiDAwRQs-CmV8imQXOVk6AnFJjYaz_ZF2GZm9AX93b_1_HH-E6KNFQG3vHE8Fi8IUjZm3tL-x_uC2A"
+    SERVICE_SECRET_KEY: "IfTnY-9TdG5yZGSPot3-OeezM9ccxYU5BECPFrBD2YJ-LQSHwdMMFwAv2C9nvEcgeGt2S92ujXL-B1pboi8m8Q"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: backend-config
+    namespace: back-end-dev
+data:
+    TZ: "Europe/Minsk"
+    PGTZ: "Europe/Minsk"
+    DB_IMAGE: "postgres"
+    DB_VERSION: "18.3"
+    DB_NAME: "postgres"
+    DB_ADMIN: "postgres"
+    DB_HOST_MASTER: "postgres-master"
+    DB_HOST_SLAVE: "postgres-slave"
+    DB_PORT_TO_MASTER: "5432"
+    DB_PORT_TO_SLAVE: "5432"
+    DB_DRIVENAME: "postgresql+asyncpg"
+    REDIS_IMAGE: "redis"
+    REDIS_VERSION: "8.6"
+    REDIS_HOST: "redis"
+    REDIS_PORT_TO: "6379"
+    RABBITMQ_IMAGE: "rabbitmq"
+    RABBITMQ_VERSION: "4.3.0-management"
+    RABBITMQ_HOST: "rabbitmq"
+    RABBITMQ_PORT_AMQP_TO: "5672"
+    RABBITMQ_PORT_HTTP_TO: "15672"
+    RABBITMQ_MAX_RETRIES: "3"
+    RABBITMQ_ROUTING_KEY: "report.generate"
+    RABBITMQ_ROUTING_KEY_ERROR: "report.generate.error"
+    API_APP: "api.app:app"
+    ALGORITHM: "HS256"
+    ACCESS_TOKEN_TTL: "3"
+    REFRESH_TOKEN_TTL: "30"
+    SERVICE_ACCESS_TOKEN_TTL: "3"
+    ORDER_SERVICE_PORT: "8000"
+    USER_PRODUCT_SERVICE_PORT: "8001"
+    AUTH_SERVICE_PORT: "8002"
+    REPORT_SERVICE_PORT: "8003"
+    AUTH_SERVICE_NAME: "auth-service"
+    USER_PRODUCT_SERVICE_NAME: "user-product-service"
+    ORDER_SERVICE_NAME: "order-service"
+    REPORT_SERVICE_NAME: "report-service"
+    AUTH_SERVICE_HOST: "auth-service"
+    USER_PRODUCT_SERVICE_HOST: "user-product-service"
+    ORDER_SERVICE_HOST: "order-service"
+    REPORT_SERVICE_HOST: "report-service"
+    AUTH_SERVICE_VERSION: "1.0.0"
+    USER_PRODUCT_SERVICE_VERSION: "1.0.0"
+    ORDER_SERVICE_VERSION: "1.0.0"
+    REPORT_SERVICE_VERSION: "1.0.0"
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: postgres-master
+    namespace: back-end-dev
+spec:
+    type: NodePort
+    selector:
+        app: postgres-master
+    ports:
+        - name: postgres
+          port: 5432
+          targetPort: 5432
+          nodePort: 30432
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+    name: postgres-master
+    namespace: back-end-dev
+spec:
+    serviceName: postgres-master
+    replicas: 1
+    selector:
+        matchLabels:
+            app: postgres-master
+    template:
+        metadata:
+            labels:
+                app: postgres-master
+        spec:
+            containers:
+                - name: postgres-master
+                  image: postgres:18.3
+                  args: ["postgres", "-c", "wal_level=logical", "-c", "max_wal_senders=10", "-c", "max_replication_slots=10"]
+                  ports:
+                      - containerPort: 5432
+                  env:
+                      - name: POSTGRES_DB
+                        valueFrom: { configMapKeyRef: { name: backend-config, key: DB_NAME } }
+                      - name: POSTGRES_USER
+                        valueFrom: { configMapKeyRef: { name: backend-config, key: DB_ADMIN } }
+                      - name: POSTGRES_PASSWORD
+                        valueFrom: { secretKeyRef: { name: backend-secrets, key: DB_ADMIN_PASS } }
+                      - name: TZ
+                        valueFrom: { configMapKeyRef: { name: backend-config, key: TZ } }
+                      - name: PGTZ
+                        valueFrom: { configMapKeyRef: { name: backend-config, key: PGTZ } }
+                  readinessProbe:
+                      exec:
+                          command: ["sh", "-c", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+                      initialDelaySeconds: 10
+                      periodSeconds: 5
+                  livenessProbe:
+                      exec:
+                          command: ["sh", "-c", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+                      initialDelaySeconds: 20
+                      periodSeconds: 10
+                  volumeMounts:
+                      - name: postgres-master-data
+                        mountPath: /var/lib/postgresql
+    volumeClaimTemplates:
+        - metadata:
+              name: postgres-master-data
+          spec:
+              accessModes: ["ReadWriteOnce"]
+              resources:
+                  requests:
+                      storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: postgres-slave
+    namespace: back-end-dev
+spec:
+    type: NodePort
+    selector:
+        app: postgres-slave
+    ports:
+        - name: postgres
+          port: 5432
+          targetPort: 5432
+          nodePort: 30433
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+    name: postgres-slave
+    namespace: back-end-dev
+spec:
+    serviceName: postgres-slave
+    replicas: 1
+    selector:
+        matchLabels:
+            app: postgres-slave
+    template:
+        metadata:
+            labels:
+                app: postgres-slave
+        spec:
+            containers:
+                - name: postgres-slave
+                  image: postgres:18.3
+                  ports:
+                      - containerPort: 5432
+                  env:
+                      - name: POSTGRES_DB
+                        valueFrom: { configMapKeyRef: { name: backend-config, key: DB_NAME } }
+                      - name: POSTGRES_USER
+                        valueFrom: { configMapKeyRef: { name: backend-config, key: DB_ADMIN } }
+                      - name: POSTGRES_PASSWORD
+                        valueFrom: { secretKeyRef: { name: backend-secrets, key: DB_ADMIN_PASS } }
+                      - name: TZ
+                        valueFrom: { configMapKeyRef: { name: backend-config, key: TZ } }
+                      - name: PGTZ
+                        valueFrom: { configMapKeyRef: { name: backend-config, key: PGTZ } }
+                  readinessProbe:
+                      exec:
+                          command: ["sh", "-c", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+                      initialDelaySeconds: 10
+                      periodSeconds: 5
+                  livenessProbe:
+                      exec:
+                          command: ["sh", "-c", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+                      initialDelaySeconds: 20
+                      periodSeconds: 10
+                  volumeMounts:
+                      - name: postgres-slave-data
+                        mountPath: /var/lib/postgresql
+    volumeClaimTemplates:
+        - metadata:
+              name: postgres-slave-data
+          spec:
+              accessModes: ["ReadWriteOnce"]
+              resources:
+                  requests:
+                      storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: redis
+    namespace: back-end-dev
+spec:
+    type: NodePort
+    selector:
+        app: redis
+    ports:
+        - name: redis
+          port: 6379
+          targetPort: 6379
+          nodePort: 30379
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+    name: redis
+    namespace: back-end-dev
+spec:
+    serviceName: redis
+    replicas: 1
+    selector:
+        matchLabels:
+            app: redis
+    template:
+        metadata:
+            labels:
+                app: redis
+        spec:
+            containers:
+                - name: redis
+                  image: redis:8.6
+                  ports:
+                      - containerPort: 6379
+                  readinessProbe:
+                      exec:
+                          command: ["redis-cli", "ping"]
+                      initialDelaySeconds: 5
+                      periodSeconds: 5
+                  livenessProbe:
+                      exec:
+                          command: ["redis-cli", "ping"]
+                      initialDelaySeconds: 10
+                      periodSeconds: 10
+                  volumeMounts:
+                      - name: redis-data
+                        mountPath: /data
+    volumeClaimTemplates:
+        - metadata:
+              name: redis-data
+          spec:
+              accessModes: ["ReadWriteOnce"]
+              resources:
+                  requests:
+                      storage: 5Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: rabbitmq
+    namespace: back-end-dev
+spec:
+    type: NodePort
+    selector:
+        app: rabbitmq
+    ports:
+        - name: amqp
+          port: 5672
+          targetPort: 5672
+          nodePort: 30672
+        - name: http
+          port: 15672
+          targetPort: 15672
+          nodePort: 30673
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+    name: rabbitmq
+    namespace: back-end-dev
+spec:
+    serviceName: rabbitmq
+    replicas: 1
+    selector:
+        matchLabels:
+            app: rabbitmq
+    template:
+        metadata:
+            labels:
+                app: rabbitmq
+        spec:
+            hostname: rabbitmq
+            containers:
+                - name: rabbitmq
+                  image: rabbitmq:4.3.0-management
+                  ports:
+                      - containerPort: 5672
+                      - containerPort: 15672
+                  env:
+                      - name: RABBITMQ_DEFAULT_USER
+                        valueFrom: { secretKeyRef: { name: backend-secrets, key: RABBITMQ_DEFAULT_USER } }
+                      - name: RABBITMQ_DEFAULT_PASS
+                        valueFrom: { secretKeyRef: { name: backend-secrets, key: RABBITMQ_DEFAULT_PASS } }
+                  readinessProbe:
+                      exec:
+                          command: ["sh", "-c", "rabbitmq-diagnostics --quiet check_running && rabbitmq-diagnostics --quiet check_local_alarms"]
+                      initialDelaySeconds: 20
+                      periodSeconds: 10
+                  livenessProbe:
+                      exec:
+                          command: ["sh", "-c", "rabbitmq-diagnostics --quiet check_running && rabbitmq-diagnostics --quiet check_local_alarms"]
+                      initialDelaySeconds: 30
+                      periodSeconds: 15
+                  volumeMounts:
+                      - name: rabbitmq-data
+                        mountPath: /var/lib/rabbitmq
+    volumeClaimTemplates:
+        - metadata:
+              name: rabbitmq-data
+          spec:
+              accessModes: ["ReadWriteOnce"]
+              resources:
+                  requests:
+                      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: auth-service
+    namespace: back-end-dev
+spec:
+    replicas: 2
+    selector:
+        matchLabels:
+            app: auth-service
+    template:
+        metadata:
+            labels:
+                app: auth-service
+        spec:
+            containers:
+                - name: auth-service
+                  image: auth-service:1.0.0
+                  imagePullPolicy: IfNotPresent
+                  ports:
+                      - containerPort: 8002
+                  envFrom:
+                      - configMapRef:
+                            name: backend-config
+                      - secretRef:
+                            name: backend-secrets
+                  readinessProbe:
+                      httpGet:
+                          path: /api/health/live
+                          port: 8002
+                      initialDelaySeconds: 20
+                      periodSeconds: 10
+                  livenessProbe:
+                      httpGet:
+                          path: /api/health/live
+                          port: 8002
+                      initialDelaySeconds: 30
+                      periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: auth-service
+    namespace: back-end-dev
+spec:
+    type: NodePort
+    selector:
+        app: auth-service
+    ports:
+        - name: http
+          port: 8002
+          targetPort: 8002
+          nodePort: 30002
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: order-service
+    namespace: back-end-dev
+spec:
+    replicas: 3
+    selector:
+        matchLabels:
+            app: order-service
+    template:
+        metadata:
+            labels:
+                app: order-service
+        spec:
+            containers:
+                - name: order-service
+                  image: order-service:1.0.0
+                  imagePullPolicy: IfNotPresent
+                  ports:
+                      - containerPort: 8000
+                  envFrom:
+                      - configMapRef:
+                            name: backend-config
+                      - secretRef:
+                            name: backend-secrets
+                  readinessProbe:
+                      httpGet:
+                          path: /api/health/live
+                          port: 8000
+                      initialDelaySeconds: 20
+                      periodSeconds: 10
+                  livenessProbe:
+                      httpGet:
+                          path: /api/health/live
+                          port: 8000
+                      initialDelaySeconds: 30
+                      periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: order-service
+    namespace: back-end-dev
+spec:
+    type: NodePort
+    selector:
+        app: order-service
+    ports:
+        - name: http
+          port: 8000
+          targetPort: 8000
+          nodePort: 30000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: user-product-service
+    namespace: back-end-dev
+spec:
+    replicas: 2
+    selector:
+        matchLabels:
+            app: user-product-service
+    template:
+        metadata:
+            labels:
+                app: user-product-service
+        spec:
+            containers:
+                - name: user-product-service
+                  image: user-product-service:1.0.0
+                  imagePullPolicy: IfNotPresent
+                  ports:
+                      - containerPort: 8001
+                  envFrom:
+                      - configMapRef:
+                            name: backend-config
+                      - secretRef:
+                            name: backend-secrets
+                  readinessProbe:
+                      httpGet:
+                          path: /api/health/live
+                          port: 8001
+                      initialDelaySeconds: 20
+                      periodSeconds: 10
+                  livenessProbe:
+                      httpGet:
+                          path: /api/health/live
+                          port: 8001
+                      initialDelaySeconds: 30
+                      periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: user-product-service
+    namespace: back-end-dev
+spec:
+    type: NodePort
+    selector:
+        app: user-product-service
+    ports:
+        - name: http
+          port: 8001
+          targetPort: 8001
+          nodePort: 30001
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: report-service
+    namespace: back-end-dev
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: report-service
+    template:
+        metadata:
+            labels:
+                app: report-service
+        spec:
+            containers:
+                - name: report-service
+                  image: report-service:1.0.0
+                  imagePullPolicy: IfNotPresent
+                  ports:
+                      - containerPort: 8003
+                  envFrom:
+                      - configMapRef:
+                            name: backend-config
+                      - secretRef:
+                            name: backend-secrets
+                  readinessProbe:
+                      httpGet:
+                          path: /api/health/live
+                          port: 8003
+                      initialDelaySeconds: 20
+                      periodSeconds: 10
+                  livenessProbe:
+                      httpGet:
+                          path: /api/health/live
+                          port: 8003
+                      initialDelaySeconds: 30
+                      periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: report-service
+    namespace: back-end-dev
+spec:
+    type: NodePort
+    selector:
+        app: report-service
+    ports:
+        - name: http
+          port: 8003
+          targetPort: 8003
+          nodePort: 30003

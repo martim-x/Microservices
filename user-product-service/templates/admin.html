@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="ru">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>SFMShop - Админ-панель</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                max-width: 800px;
+                margin: 40px auto;
+                padding: 20px;
+                background: #f9f9f9;
+            }
+
+            h1 {
+                text-align: center;
+                color: #333;
+            }
+
+            h2 {
+                margin-top: 30px;
+                color: #444;
+            }
+
+            form,
+            .block {
+                background: white;
+                padding: 20px;
+                border-radius: 8px;
+                margin-bottom: 20px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            }
+
+            label {
+                display: block;
+                margin-bottom: 6px;
+                font-weight: bold;
+            }
+
+            input {
+                width: 100%;
+                padding: 10px;
+                margin-bottom: 15px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+
+            button {
+                background: #4caf50;
+                color: white;
+                border: none;
+                padding: 10px 18px;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+
+            button:hover {
+                background: #43a047;
+            }
+
+            .message {
+                margin-top: 10px;
+                padding: 10px;
+                border-radius: 4px;
+            }
+
+            .success {
+                background: #d4edda;
+                color: #155724;
+            }
+
+            .error {
+                background: #f8d7da;
+                color: #721c24;
+            }
+
+            pre {
+                background: #272822;
+                color: #f8f8f2;
+                padding: 15px;
+                border-radius: 6px;
+                overflow-x: auto;
+                white-space: pre-wrap;
+                word-break: break-word;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Админ-панель SFMShop</h1>
+
+        <form id="createProductForm">
+            <h2>Создать товар</h2>
+
+            <label for="create-name">Название товара:</label>
+            <input type="text" id="create-name" required />
+
+            <label for="create-price">Цена:</label>
+            <input type="number" id="create-price" step="0.01" min="0" required />
+
+            <label for="create-quantity">Количество:</label>
+            <input type="number" id="create-quantity" min="0" required />
+
+            <button type="submit">Добавить товар</button>
+            <div id="createMessage" class="message"></div>
+        </form>
+
+        <form id="getProductForm">
+            <h2>Получить товар по ID</h2>
+
+            <label for="get-product-id">ID товара:</label>
+            <input type="number" id="get-product-id" min="1" required />
+
+            <button type="submit">Получить товар</button>
+            <div id="getProductMessage" class="message"></div>
+            <pre id="getProductResult"></pre>
+        </form>
+
+        <div class="block">
+            <h2>Получить все товары</h2>
+            <button id="getAllProductsBtn" type="button">Получить список товаров</button>
+            <div id="getAllProductsMessage" class="message"></div>
+            <pre id="getAllProductsResult"></pre>
+        </div>
+
+        <script>
+            const API_BASE = "http://localhost:8001/api/v2/products";
+            const AUTH_HEADERS = {
+                "Content-Type": "application/json",
+                Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJuYW1lIjoic3RyaW5nIiwiZW1haWwiOiJ1c2VyQGV4YW1wbGUuY29tIiwidHlwZSI6ImFjY2VzcyIsImV4cCI6MTc3NzgyMjg4OH0.6gkKVzBc08ZUnf8bJE2YnvLexX5dwy6Pv2vD9VJkEgs",
+            };
+
+            function showMessage(elementId, text, isSuccess) {
+                const el = document.getElementById(elementId);
+                el.textContent = text;
+                el.className = "message " + (isSuccess ? "success" : "error");
+            }
+
+            function clearMessage(elementId) {
+                const el = document.getElementById(elementId);
+                el.textContent = "";
+                el.className = "message";
+            }
+
+            document.getElementById("createProductForm").addEventListener("submit", async function (event) {
+                event.preventDefault();
+
+                const formData = {
+                    name: document.getElementById("create-name").value,
+                    price: parseFloat(document.getElementById("create-price").value),
+                    quantity: parseInt(document.getElementById("create-quantity").value),
+                };
+
+                clearMessage("createMessage");
+
+                try {
+                    const response = await fetch(API_BASE, {
+                        method: "POST",
+                        headers: AUTH_HEADERS,
+                        body: JSON.stringify(formData),
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        showMessage("createMessage", `Товар успешно создан. ID: ${data.id}`, true);
+                        document.getElementById("createProductForm").reset();
+                    } else {
+                        showMessage("createMessage", `Ошибка: ${data.detail || "Неизвестная ошибка"}`, false);
+                    }
+                } catch (error) {
+                    showMessage("createMessage", `Ошибка подключения: ${error.message}`, false);
+                }
+            });
+
+            document.getElementById("getProductForm").addEventListener("submit", async function (event) {
+                event.preventDefault();
+
+                const productId = document.getElementById("get-product-id").value;
+                clearMessage("getProductMessage");
+                document.getElementById("getProductResult").textContent = "";
+
+                try {
+                    const response = await fetch(`${API_BASE}/${productId}`, {
+                        method: "GET",
+                        headers: {
+                            Authorization: "Bearer valid_token",
+                        },
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        showMessage("getProductMessage", "Товар успешно получен", true);
+                        document.getElementById("getProductResult").textContent = JSON.stringify(data, null, 2);
+                    } else {
+                        showMessage("getProductMessage", `Ошибка: ${data.detail || "Неизвестная ошибка"}`, false);
+                    }
+                } catch (error) {
+                    showMessage("getProductMessage", `Ошибка подключения: ${error.message}`, false);
+                }
+            });
+
+            document.getElementById("getAllProductsBtn").addEventListener("click", async function () {
+                clearMessage("getAllProductsMessage");
+                document.getElementById("getAllProductsResult").textContent = "";
+
+                try {
+                    const response = await fetch(API_BASE, {
+                        method: "GET",
+                        headers: {
+                            Authorization: "Bearer valid_token",
+                        },
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        showMessage("getAllProductsMessage", "Список товаров получен", true);
+                        document.getElementById("getAllProductsResult").textContent = JSON.stringify(data, null, 2);
+                    } else {
+                        showMessage("getAllProductsMessage", `Ошибка: ${data.detail || "Неизвестная ошибка"}`, false);
+                    }
+                } catch (error) {
+                    showMessage("getAllProductsMessage", `Ошибка подключения: ${error.message}`, false);
+                }
+            });
+        </script>
+    </body>
+</html>

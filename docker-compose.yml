@@ -1,0 +1,207 @@
+name: apps-backend-dev
+version: "3.9"
+
+services:
+    postgres-master:
+        image: "${DB_IMAGE}:${DB_VERSION}"
+        container_name: "postgres-dev-${DB_VERSION}-master"
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: ${DB_NAME}
+            POSTGRES_USER: ${DB_ADMIN}
+            POSTGRES_PASSWORD: ${DB_ADMIN_PASS}
+            TZ: Europe/Minsk
+            PGTZ: Europe/Minsk
+        ports:
+            - "${DB_PORT_FROM_MASTER}:${DB_PORT_TO_MASTER}"
+        volumes:
+            - postgres_master_data:/var/lib/postgresql
+        command:
+            - postgres
+            - -c
+            - wal_level=logical
+            - -c
+            - max_wal_senders=10
+            - -c
+            - max_replication_slots=10
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U ${DB_ADMIN} -d ${DB_NAME}"]
+            interval: 5s
+            timeout: 5s
+            retries: 10
+            start_period: 10s
+
+    postgres-slave:
+        image: "${DB_IMAGE}:${DB_VERSION}"
+        container_name: "postgres-dev-${DB_VERSION}-slave"
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: ${DB_NAME}
+            POSTGRES_USER: ${DB_ADMIN}
+            POSTGRES_PASSWORD: ${DB_ADMIN_PASS}
+            TZ: Europe/Minsk
+            PGTZ: Europe/Minsk
+        ports:
+            - "${DB_PORT_FROM_SLAVE}:${DB_PORT_TO_SLAVE}"
+        volumes:
+            - postgres_slave_data:/var/lib/postgresql
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U ${DB_ADMIN} -d ${DB_NAME}"]
+            interval: 5s
+            timeout: 5s
+            retries: 10
+            start_period: 10s
+        depends_on:
+            postgres-master:
+                condition: service_healthy
+
+    redis:
+        image: "${REDIS_IMAGE}:${REDIS_VERSION}"
+        container_name: "redis-dev-${REDIS_VERSION}"
+        restart: unless-stopped
+        ports:
+            - "${REDIS_PORT_FROM}:${REDIS_PORT_TO}"
+        volumes:
+            - redis_data:/data
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 5s
+            timeout: 3s
+            retries: 10
+            start_period: 5s
+
+    rabbitmq:
+        image: "${RABBITMQ_IMAGE}:${RABBITMQ_VERSION}"
+        container_name: "rabbitmq-dev-${RABBITMQ_VERSION}"
+        restart: unless-stopped
+        hostname: rabbitmq
+        environment:
+            RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+            RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+        ports:
+            - "${RABBITMQ_PORT_AMQP_FROM}:${RABBITMQ_PORT_AMQP_TO}"
+            - "${RABBITMQ_PORT_HTTP_FROM}:${RABBITMQ_PORT_HTTP_TO}"
+        volumes:
+            - rabbitmq_data:/var/lib/rabbitmq
+        healthcheck:
+            test: ["CMD-SHELL", "rabbitmq-diagnostics --quiet check_running && rabbitmq-diagnostics --quiet check_local_alarms"]
+            interval: 10s
+            timeout: 5s
+            retries: 10
+            start_period: 20s
+
+    auth-service:
+        image: "${AUTH_SERVICE_NAME}:${AUTH_SERVICE_VERSION}"
+        build:
+            context: ./auth-service
+            dockerfile: Dockerfile
+        container_name: "auth-service-dev-${AUTH_SERVICE_VERSION}"
+        restart: unless-stopped
+        env_file:
+            - ./auth-service/.env
+        ports:
+            - "${AUTH_SERVICE_PORT}:${AUTH_SERVICE_PORT}"
+        healthcheck:
+            test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8002/api/health/live', timeout=5)"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 20s
+        depends_on:
+            postgres-master:
+                condition: service_healthy
+            postgres-slave:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+
+    order-service:
+        image: "${ORDER_SERVICE_NAME}:${ORDER_SERVICE_VERSION}"
+        build:
+            context: ./order-service
+            dockerfile: Dockerfile
+        container_name: "order-service-dev-${ORDER_SERVICE_VERSION}"
+        restart: unless-stopped
+        env_file:
+            - ./order-service/.env
+        ports:
+            - "${ORDER_SERVICE_PORT}:${ORDER_SERVICE_PORT}"
+        healthcheck:
+            test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health/live', timeout=5)"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 20s
+        depends_on:
+            postgres-master:
+                condition: service_healthy
+            postgres-slave:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+            auth-service:
+                condition: service_healthy
+            rabbitmq:
+                condition: service_healthy
+
+    user-product-service:
+        image: "${USER_PRODUCT_SERVICE_NAME}:${USER_PRODUCT_SERVICE_VERSION}"
+        build:
+            context: ./user-product-service
+            dockerfile: Dockerfile
+        container_name: "user-product-service-dev-${USER_PRODUCT_SERVICE_VERSION}"
+        restart: unless-stopped
+        env_file:
+            - ./user-product-service/.env
+        ports:
+            - "${USER_PRODUCT_SERVICE_PORT}:${USER_PRODUCT_SERVICE_PORT}"
+        healthcheck:
+            test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/api/health/live', timeout=5)"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 20s
+        depends_on:
+            postgres-master:
+                condition: service_healthy
+            postgres-slave:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+            auth-service:
+                condition: service_healthy
+
+    report-service:
+        image: "${REPORT_SERVICE_NAME}:${REPORT_SERVICE_VERSION}"
+        build:
+            context: ./report-service
+            dockerfile: Dockerfile
+        container_name: "report-service-dev-${REPORT_SERVICE_VERSION}"
+        restart: unless-stopped
+        env_file:
+            - ./report-service/.env
+        ports:
+            - "${REPORT_SERVICE_PORT}:${REPORT_SERVICE_PORT}"
+        healthcheck:
+            test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8003/api/health/live', timeout=5)"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 20s
+        depends_on:
+            postgres-master:
+                condition: service_healthy
+            postgres-slave:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+            auth-service:
+                condition: service_healthy
+            rabbitmq:
+                condition: service_healthy
+
+volumes:
+    postgres_master_data:
+    postgres_slave_data:
+    redis_data:
+    rabbitmq_data:
