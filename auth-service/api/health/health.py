@@ -1,11 +1,7 @@
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Request, Response, status
-
-health_router = APIRouter(
-    prefix="/api/health",
-    tags=["health"],
-)
+from api.health.core import health_router
+from fastapi import Request, Response, status
 
 
 def _is_ready(health: dict) -> bool:
