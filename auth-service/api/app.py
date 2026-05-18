@@ -3,6 +3,7 @@ import time
 from contextlib import asynccontextmanager
 
 from api.auth.auth import auth_router
+from api.dependencies.limiter import rate_limit_handler
 from api.health.health import health_router
 from api.settings import settings
 from database.connection import SessionLocalMaster
@@ -14,7 +15,6 @@ from fastapi.responses import JSONResponse
 from repository.a_service_token_repository import AServiceTokenRepository
 from services.a_service_token_service import AServiceTokenService
 from services.exceptions import ServiceError
-from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 logger = logging.getLogger("uvicorn.error")
@@ -43,7 +43,7 @@ async def lifespan(app: FastAPI):
         },
     }
 
-    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    app.add_exception_handler(RateLimitExceeded, rate_limit_handler)
 
     try:
         async with SessionLocalMaster() as session:

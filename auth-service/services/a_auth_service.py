@@ -212,6 +212,9 @@ class AAuthService:
             if not bcrypt.checkpw(password.encode(), user.password_hash.encode()):
                 raise UnauthorizedError("Неверный пароль")
 
+            if user.name is None:
+                raise UnauthorizedError("Имя пользователя отсутствует")
+
             access_token = self.create_access_token(
                 AccessTokenPayload(
                     user_id=user.id,
@@ -252,6 +255,9 @@ class AAuthService:
             await self.auth_repository.db_revoke_refresh_token(
                 refresh_token_hash=refresh_token_hash
             )
+
+            if token_record.user.name is None:
+                raise UnauthorizedError("Имя пользователя отсутствует")
 
             access_token = self.create_access_token(
                 AccessTokenPayload(

@@ -14,14 +14,6 @@ from services.a_auth_service import AAuthService
 from services.a_service_token_service import AServiceTokenService
 from services.exceptions import UnauthorizedError
 
-COOKIE_PARAMS = {
-    "key": "refresh_token",
-    "httponly": True,
-    "secure": False,
-    "samesite": "lax",
-    "max_age": 30 * 24 * 60 * 60,
-}
-
 
 @auth_router.post(
     "/register",
@@ -73,8 +65,12 @@ async def login(
     )
 
     response.set_cookie(
+        key="refresh_token",
         value=tokens["refresh_token"],
-        **COOKIE_PARAMS,
+        httponly=True,
+        secure=False,
+        samesite="lax",
+        max_age=30 * 24 * 60 * 60,
     )
 
     return TokenPairResponse(
@@ -102,8 +98,12 @@ async def refresh_token(
     result = await auth_service.refresh(refresh_token=refresh_token)
 
     response.set_cookie(
+        key="refresh_token",
         value=result["refresh_token"],
-        **COOKIE_PARAMS,
+        httponly=True,
+        secure=False,
+        samesite="lax",
+        max_age=30 * 24 * 60 * 60,
     )
 
     return TokenPairResponse(
