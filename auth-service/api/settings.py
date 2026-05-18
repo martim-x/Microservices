@@ -7,7 +7,10 @@ from sqlalchemy.engine import URL
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=(
+            "secrets.env",
+            "variables.env",
+        ),
         env_file_encoding="utf-8",
         extra="ignore",
     )
@@ -101,8 +104,7 @@ class Settings(BaseSettings):
 
     # ——— Computed URLs —————————————————————————
 
-    @computed_field
-    @property
+    @computed_field  # type: ignore[prop-decorator]
     def DB_MASTER_URL(self) -> URL:
         return URL.create(
             drivername=self.DB_DRIVENAME,
@@ -113,8 +115,7 @@ class Settings(BaseSettings):
             database=self.DB_NAME,
         )
 
-    @computed_field
-    @property
+    @computed_field  # type: ignore[prop-decorator]
     def DB_SLAVE_URL(self) -> URL:
         return URL.create(
             drivername=self.DB_DRIVENAME,
@@ -127,29 +128,25 @@ class Settings(BaseSettings):
 
     # ——— SERVICES ——————————————————————————————————
 
-    @computed_field
-    @property
+    @computed_field  # type: ignore[prop-decorator]
     def POSTGRESQL_DSN(self) -> str:
         return (
             f"postgresql://{self.DB_ADMIN}:{self.DB_ADMIN_PASS}"
             f"@{self.DB_HOST_SLAVE}:{self.DB_PORT_TO_SLAVE}/{self.DB_NAME}"
         )
 
-    @computed_field
-    @property
+    @computed_field  # type: ignore[prop-decorator]
     def REDIS_URL(self) -> str:
         return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT_TO}"
 
-    @computed_field
-    @property
+    @computed_field  # type: ignore[prop-decorator]
     def RABBITMQ_URL(self) -> str:
         return (
             f"amqp://{self.RABBITMQ_DEFAULT_USER}:{self.RABBITMQ_DEFAULT_PASS}"
             f"@{self.RABBITMQ_HOST}:{self.RABBITMQ_PORT_AMQP_TO}/"
         )
 
-    @computed_field
-    @property
+    @computed_field  # type: ignore[prop-decorator]
     def POSTGRESQL_REPLICATION_URL(self) -> str:
         return (
             f"host={self.DB_HOST_MASTER} "
@@ -161,50 +158,43 @@ class Settings(BaseSettings):
 
     # ——— SERVICE URLS ——————————————————————————————
 
-    @computed_field
-    @property
+    @computed_field  # type: ignore[prop-decorator]
     def USER_PRODUCT_SERVICE_URL(self) -> str:
         return (
             f"http://{self.USER_PRODUCT_SERVICE_HOST}:"
             f"{self.USER_PRODUCT_SERVICE_PORT}/api"
         )
 
-    @computed_field
-    @property
+    @computed_field  # type: ignore[prop-decorator]
     def ORDER_SERVICE_URL(self) -> str:
         return f"http://{self.ORDER_SERVICE_HOST}:" f"{self.ORDER_SERVICE_PORT}/api"
 
-    @computed_field
-    @property
+    @computed_field  # type: ignore[prop-decorator]
     def AUTH_SERVICE_URL(self) -> str:
         return f"http://{self.AUTH_SERVICE_HOST}:" f"{self.AUTH_SERVICE_PORT}/api"
 
-    @computed_field
-    @property
+    @computed_field  # type: ignore[prop-decorator]
     def REPORT_SERVICE_URL(self) -> str:
         return f"http://{self.REPORT_SERVICE_HOST}:" f"{self.REPORT_SERVICE_PORT}/api"
 
     # ——— DB, CACHE, MQ —————————————————————————
 
-    @computed_field
-    @property
+    @computed_field  # type: ignore[prop-decorator]
     def DB_SERVICE_NAME(self) -> str:
         return "-".join([self.DB_IMAGE, self.DB_VERSION])
 
-    @computed_field
-    @property
+    @computed_field  # type: ignore[prop-decorator]
     def CACHE_SERVICE_NAME(self) -> str:
         return "-".join([self.REDIS_IMAGE, self.REDIS_VERSION])
 
-    @computed_field
-    @property
+    @computed_field  # type: ignore[prop-decorator]
     def MQ_SERVICE_NAME(self) -> str:
         return "-".join([self.RABBITMQ_IMAGE, self.RABBITMQ_VERSION])
 
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    return Settings()  # type: ignore[call-arg]
 
 
 settings = get_settings()

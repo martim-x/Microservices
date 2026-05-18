@@ -2,25 +2,22 @@ import logging
 import time
 from contextlib import asynccontextmanager
 
+from api.auth.auth import auth_router
+from api.health.health import health_router
 from api.settings import settings
-from database.connection import SessionLocalMaster, get_write_session
-from database.schemas import ServiceAccessTokenPayload, ServiceTokenCreate
-from fastapi import APIRouter, Depends, FastAPI, Request, Response
+from database.connection import SessionLocalMaster
+from database.schemas import ServiceTokenCreate
+from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from repository.a_auth_repository import AAuthRepository
 from repository.a_service_token_repository import AServiceTokenRepository
-from services.a_auth_service import AAuthService
 from services.a_service_token_service import AServiceTokenService
 from services.exceptions import ServiceError
-from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
-from slowapi.util import get_remote_address
 
 logger = logging.getLogger("uvicorn.error")
-limiter = Limiter(key_func=get_remote_address)
 
 
 # ——— Lifespan ————————————————————————————————————————————————————————————————
@@ -168,69 +165,8 @@ async def error_handler(request: Request, call_next):
         )
 
 
-# ——— DI: auth ————————————————————————————————————————————————————————————————
-
-
-async def get_auth_repository(
-    session=Depends(get_write_session),
-) -> AAuthRepository:
-    return AAuthRepository(session=session)
-
-
-async def get_auth_service(
-    auth_repo: AAuthRepository = Depends(get_auth_repository),
-) -> AAuthService:
-    return AAuthService(
-        auth_repository=auth_repo,
-    )
-
-
-# ——— Security ————————————————————————————————————————————————————————————————
-
-
-security = HTTPBearer()
-
-
-async def get_service_token_repository(
-    session=Depends(get_write_session),
-) -> AServiceTokenRepository:
-    return AServiceTokenRepository(session=session)
-
-
-async def get_service_token_service(
-    service_token_repository: AServiceTokenRepository = Depends(
-        get_service_token_repository
-    ),
-) -> AServiceTokenService:
-    return AServiceTokenService(service_token_repository=service_token_repository)
-
-
-async def get_current_service(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-    service_token_service: AServiceTokenService = Depends(get_service_token_service),
-) -> ServiceAccessTokenPayload:
-    return service_token_service.verify_service_access_token(
-        service_access_token=credentials.credentials,
-        expected_audience=settings.AUTH_SERVICE_NAME,
-    )
-
-
 # ——— Routers ——————————————————————————————————————————————————————————————————
 
-
-auth_router = APIRouter(
-    prefix="/api/auth",
-    tags=["auth"],
-)
-
-health_router = APIRouter(
-    prefix="/api/health",
-    tags=["health"],
-)
-
-
-import api.auth.auth
-import api.health.health
 
 for router in [auth_router, health_router]:
     app.include_router(router)

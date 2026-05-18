@@ -1,9 +1,5 @@
-from api.app import (
-    auth_router,
-    get_auth_service,
-    get_service_token_service,
-    limiter,
-)
+from api.dependencies.limiter import limiter
+from api.dependencies.services import get_auth_service, get_service_token_service
 from api.settings import settings
 from database.schemas import (
     AccessTokenPayload,
@@ -12,10 +8,16 @@ from database.schemas import (
     UserLogin,
     UserOut,
 )
-from fastapi import Cookie, Depends, Request, Response, status
+from fastapi import APIRouter, Cookie, Depends, Request, Response, status
 from services.a_auth_service import AAuthService
 from services.a_service_token_service import AServiceTokenService
 from services.exceptions import UnauthorizedError
+
+auth_router = APIRouter(
+    prefix="/api/auth",
+    tags=["auth"],
+)
+
 
 COOKIE_PARAMS = {
     "key": "refresh_token",
