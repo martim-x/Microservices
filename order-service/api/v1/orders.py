@@ -1,4 +1,4 @@
-from api.dependencies.cache import cache_dep
+from api.dependencies.helpers import cache_dep
 from api.dependencies.limiter import limiter
 from api.dependencies.services import (
     get_order_read_service,

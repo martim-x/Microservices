@@ -1,4 +1,9 @@
-from api.app import get_user_cache_service, get_user_write_service, limiter, v2_router
+from api.dependencies.limiter import limiter
+from api.dependencies.services import (
+    get_user_cache_service,
+    get_user_write_service,
+)
+from api.v2.core import v2_router
 from database.schemas import UserCreate, UserOut, UserUpdate
 from fastapi import Depends, Request, status
 from services.a_user_service import AUserService

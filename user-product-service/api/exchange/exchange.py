@@ -1,4 +1,5 @@
-from api.app import exchange_router, get_exchange_service
+from api.dependencies.services import get_exchange_service
+from api.exchange.core import exchange_router
 from fastapi import Depends, Request
 from services.a_exchange_service import AExchangeService
 

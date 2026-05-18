@@ -1,9 +1,9 @@
-from api.app import (
+from api.dependencies.limiter import limiter
+from api.dependencies.services import (
     get_product_cache_service,
     get_product_write_service,
-    limiter,
-    v2_router,
 )
+from api.v2.core import v2_router
 from database.schemas import ProductCreate, ProductOut, ProductUpdate
 from fastapi import Depends, Request, status
 from services.a_product_service import AProductService

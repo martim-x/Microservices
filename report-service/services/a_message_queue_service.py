@@ -105,7 +105,14 @@ class AMessageQueueService:
 
         try:
             if message.headers:
-                retry_count = int(message.headers.get("x-retry-count", 0))
+                retry_value = message.headers.get("x-retry-count", 0)
+
+                if isinstance(retry_value, int):
+                    retry_count = retry_value
+                elif isinstance(retry_value, str):
+                    retry_count = int(retry_value)
+                else:
+                    retry_count = 0
 
             payload = json.loads(message.body.decode("utf-8"))
             report = ReportCreate.model_validate(payload)

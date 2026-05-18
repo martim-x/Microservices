@@ -148,16 +148,16 @@ class AExchangeService:
                 await asyncio.gather(*tasks, return_exceptions=True)
 
         if errors:
-            for exc in errors:
+            for error in errors:
                 if isinstance(
-                    exc,
+                    error,
                     (
                         ValidationServiceError,
                         ExternalServiceError,
                         ExternalServiceUnavailableError,
                     ),
                 ):
-                    raise exc
+                    raise error
             raise errors[0]
 
         raise ExternalServiceUnavailableError(

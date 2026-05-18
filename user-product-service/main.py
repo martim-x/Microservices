@@ -1,7 +1,7 @@
 import asyncio
 
 from api.settings import settings
-from database.connection import _init_dbs, _soft_init_dbs
+from database.connection import _soft_init_dbs
 from uvicorn.config import Config
 from uvicorn.server import Server
 

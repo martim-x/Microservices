@@ -1,10 +1,10 @@
-from api.app import (
-    cache_dep,
+from api.dependencies.helpers import cache_dep
+from api.dependencies.limiter import limiter
+from api.dependencies.services import (
     get_user_read_service,
     get_user_write_service,
-    limiter,
-    v1_router,
 )
+from api.v1.core import v1_router
 from database.schemas import UserCreate, UserOut, UserUpdate
 from fastapi import Depends, Request, status
 from services.a_user_service import AUserService

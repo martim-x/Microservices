@@ -3,8 +3,10 @@ import time
 from contextlib import asynccontextmanager
 
 import aio_pika
+from api.health.core import health_router
+from api.report.core import report_router
 from api.settings import settings
-from fastapi import APIRouter, FastAPI, Request, Response
+from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -152,20 +154,5 @@ async def error_handler(request: Request, call_next):
         )
 
 
-# ——— DI: rabbitmq ————————————————————————————————————————————————————————————
-
-health_router = APIRouter(
-    prefix="/api/health",
-    tags=["health"],
-)
-
-mq_router = APIRouter(
-    prefix="/api/mq",
-    tags=["mq"],
-)
-
-import api.health.health
-import api.routes.reports
-
-for router in [health_router, mq_router]:
+for router in [health_router, report_router]:
     app.include_router(router)
