@@ -8,8 +8,8 @@ from api.exchange.core import exchange_router
 from api.health.core import health_router
 from api.internal.core import internal_router
 from api.settings import settings
-from api.v1.products import v1_router
-from api.v2.products import v2_router
+from api.v1.core import v1_router
+from api.v2.core import v2_router
 from database.connection import SessionLocalMaster
 from database.schemas import (
     ServiceTokenCreate,
