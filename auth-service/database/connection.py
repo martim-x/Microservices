@@ -63,6 +63,22 @@ async def _set_up_master_slave():
 
     async with aengine_master.connect() as conn:
         conn = await conn.execution_options(isolation_level="AUTOCOMMIT")
+
+        slot_exists = await conn.scalar(text("""
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM pg_replication_slots
+                    WHERE slot_name = 'app_sub'
+                );
+                """))
+
+        if slot_exists:
+            await conn.execute(text("""
+                    SELECT pg_drop_replication_slot('app_sub');
+                    """))
+
+    async with aengine_master.connect() as conn:
+        conn = await conn.execution_options(isolation_level="AUTOCOMMIT")
         await conn.execute(text("DROP PUBLICATION IF EXISTS app_pub;"))
         await conn.execute(text("""
                 CREATE PUBLICATION app_pub
@@ -90,7 +106,7 @@ async def _init_dbs():
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
-    await _set_up_master_slave()
+    # await _set_up_master_slave()
 
 
 async def _soft_init_dbs():
@@ -100,4 +116,4 @@ async def _soft_init_dbs():
     async with aengine_slave.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    await _set_up_master_slave()
+    # await _set_up_master_slave()
