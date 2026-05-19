@@ -75,7 +75,7 @@ async def _set_up_master_slave():
         await conn.execute(text("DROP SUBSCRIPTION IF EXISTS app_sub;"))
         await conn.execute(text(f"""
                 CREATE SUBSCRIPTION app_sub
-                CONNECTION '{settings.POSTGRESQL_REPLICATION_URL}'
+                CONNECTION '{settings.CONNECTION_FROM_SLAVE_TO_MASTER_URL}'
                 PUBLICATION app_pub
                 WITH (copy_data = false);
                 """))

@@ -31,20 +31,28 @@ class Settings(BaseSettings):
     # ——— DB ————————————————————————————————————
 
     DB_DRIVENAME: str
-    DB_ADMIN: str
-    DB_ADMIN_PASS: str
+
+    DB_ADMIN_MASTER: str
+    DB_ADMIN_PASS_MASTER: str
     DB_HOST_MASTER: str
-    DB_HOST_SLAVE: str
-    DB_NAME: str
     DB_PORT_FROM_MASTER: int
+    DB_PORT_TO_MASTER: int
+
+    DB_ADMIN_SLAVE: str
+    DB_ADMIN_PASS_SLAVE: str
+    DB_HOST_SLAVE: str
     DB_PORT_FROM_SLAVE: int
+    DB_PORT_TO_SLAVE: int
+
+    DB_NAME: str
     DB_IMAGE: str
     DB_VERSION: str
-    DB_PORT_TO_MASTER: int
-    DB_PORT_TO_SLAVE: int
     DB_VOLUME_MASTER: str
     DB_VOLUME_SLAVE: str
     DB_VOLUME: str
+
+    REPL_USER: str
+    REPL_PASSWORD: int
 
     # ——— Redis —————————————————————————————————
 
@@ -110,8 +118,8 @@ class Settings(BaseSettings):
     def DB_MASTER_URL(self) -> URL:
         return URL.create(
             drivername=self.DB_DRIVENAME,
-            username=self.DB_ADMIN,
-            password=self.DB_ADMIN_PASS,
+            username=self.DB_ADMIN_MASTER,
+            password=self.DB_ADMIN_PASS_MASTER,
             host=self.DB_HOST_MASTER,
             port=self.DB_PORT_TO_MASTER,
             database=self.DB_NAME,
@@ -121,21 +129,14 @@ class Settings(BaseSettings):
     def DB_SLAVE_URL(self) -> URL:
         return URL.create(
             drivername=self.DB_DRIVENAME,
-            username=self.DB_ADMIN,
-            password=self.DB_ADMIN_PASS,
+            username=self.DB_ADMIN_SLAVE,
+            password=self.DB_ADMIN_PASS_SLAVE,
             host=self.DB_HOST_SLAVE,
             port=self.DB_PORT_TO_SLAVE,
             database=self.DB_NAME,
         )
 
     # ——— SERVICES ——————————————————————————————————
-
-    @property
-    def POSTGRESQL_DSN(self) -> str:
-        return (
-            f"postgresql://{self.DB_ADMIN}:{self.DB_ADMIN_PASS}"
-            f"@{self.DB_HOST_SLAVE}:{self.DB_PORT_TO_SLAVE}/{self.DB_NAME}"
-        )
 
     @property
     def REDIS_URL(self) -> str:
@@ -149,13 +150,13 @@ class Settings(BaseSettings):
         )
 
     @property
-    def CONNECTION_URL(self) -> str:
+    def CONNECTION_FROM_SLAVE_TO_MASTER_URL(self) -> str:
         return (
             f"host={self.DB_HOST_MASTER} "
             f"port={self.DB_PORT_TO_MASTER} "
             f"dbname={self.DB_NAME} "
-            f"user=repl_user "
-            f"password={self.DB_ADMIN_PASS}"
+            f"user={self.REPL_USER} "
+            f"password={self.REPL_PASSWORD}"
         )
 
     # ——— SERVICE URLS ——————————————————————————————

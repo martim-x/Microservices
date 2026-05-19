@@ -48,9 +48,7 @@ async def get_read_session():
 async def _set_up_master_slave():
     async with aengine_master.connect() as conn:
         conn = await conn.execution_options(isolation_level="AUTOCOMMIT")
-        await conn.execute(
-            text(
-                """
+        await conn.execute(text("""
                 DO $$
                 BEGIN
                     IF NOT EXISTS (
@@ -61,36 +59,26 @@ async def _set_up_master_slave():
                     END IF;
                 END
                 $$;
-                """
-            )
-        )
+                """))
 
     async with aengine_master.connect() as conn:
         conn = await conn.execution_options(isolation_level="AUTOCOMMIT")
         await conn.execute(text("DROP PUBLICATION IF EXISTS app_pub;"))
-        await conn.execute(
-            text(
-                """
+        await conn.execute(text("""
                 CREATE PUBLICATION app_pub
                 FOR TABLE users, products, orders, order_items, auth
                 WITH (publish = 'insert, update, delete');
-                """
-            )
-        )
+                """))
 
     async with aengine_slave.connect() as conn:
         conn = await conn.execution_options(isolation_level="AUTOCOMMIT")
         await conn.execute(text("DROP SUBSCRIPTION IF EXISTS app_sub;"))
-        await conn.execute(
-            text(
-                f"""
+        await conn.execute(text(f"""
                 CREATE SUBSCRIPTION app_sub
-                CONNECTION '{settings.CONNECTION_URL}'
+                CONNECTION '{settings.CONNECTION_FROM_SLAVE_TO_MASTER_URL}'
                 PUBLICATION app_pub
                 WITH (copy_data = false);
-                """
-            )
-        )
+                """))
 
 
 async def _init_dbs():
