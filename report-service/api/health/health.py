@@ -59,7 +59,7 @@ async def ready(request: Request, response: Response):
 
 
 @local_router.get(
-    "",
+    "/full",
     status_code=status.HTTP_200_OK,
 )
 async def health_full(request: Request, response: Response):
