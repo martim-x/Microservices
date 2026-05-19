@@ -3,16 +3,17 @@ from api.dependencies.services import (
     get_user_cache_service,
     get_user_write_service,
 )
-from api.internal.core import internal_router
 from database.schemas import UserCreate, UserOut, UserWithPasswordOut
-from fastapi import Depends, Request, status
+from fastapi import APIRouter, Depends, Request, status
 from pydantic import EmailStr
 from services.a_user_service import AUserService
 from services.cache.a_user_cache_service import AUserCacheService
 
+users_router = APIRouter(prefix="/users")
 
-@internal_router.get(
-    "/users/by-email/{email}",
+
+@users_router.get(
+    "/by-email/{email}",
     summary="Получить пользвателя по почте (v2, Redis-кэш)",
     status_code=status.HTTP_200_OK,
     response_model=UserWithPasswordOut,
@@ -26,8 +27,8 @@ async def v2_get_user_by_email(
     return await user_cache.get_cached_user_by_email(email=email)
 
 
-@internal_router.get(
-    "/users/{user_id}",
+@users_router.get(
+    "/{user_id}",
     summary="Получить пользователя по ID (v2, Redis-кэш)",
     status_code=status.HTTP_200_OK,
     response_model=UserOut,
@@ -41,8 +42,8 @@ async def v2_get_user(
     return await user_cache.get_cached_user(user_id=user_id)
 
 
-@internal_router.post(
-    "/users",
+@users_router.post(
+    "/",
     summary="Создать пользователя (v2, с инвалидацией кэша)",
     status_code=status.HTTP_201_CREATED,
     response_model=UserOut,

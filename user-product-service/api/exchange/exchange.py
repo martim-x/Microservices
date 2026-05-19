@@ -1,10 +1,11 @@
 from api.dependencies.services import get_exchange_service
-from api.exchange.core import exchange_router
-from fastapi import Depends, Request
+from fastapi import APIRouter, Depends, Request
 from services.a_exchange_service import AExchangeService
 
+convert_router = APIRouter(prefix="/convert")
 
-@exchange_router.get("/convert/{price}/{from_currency}/{to_currency}")
+
+@convert_router.get("/convert/{price}/{from_currency}/{to_currency}")
 async def exchange_currency(
     request: Request,
     price: float,

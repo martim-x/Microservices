@@ -6,16 +6,17 @@ from api.dependencies.services import (
     get_service_token_service,
 )
 from api.settings import settings
-from api.v2.core import v2_router
 from database.schemas import OrderCreate, OrderOut, ReportCreate
-from fastapi import Depends, Request, status
+from fastapi import APIRouter, Depends, Request, status
 from services.a_message_queue_service import AMessageQueueService
 from services.a_order_service import AOrderService
 from services.a_service_token_service import AServiceTokenService
 from services.cache.a_order_cache_service import AOrderCacheService
 
+orders_router = APIRouter(prefix="/orders")
 
-@v2_router.get(
+
+@orders_router.get(
     "/orders",
     summary="Получить список заказов (v2, Redis-кэш)",
     status_code=status.HTTP_200_OK,
@@ -29,7 +30,7 @@ async def v2_get_orders(
     return await order_cache.get_cached_orders()
 
 
-@v2_router.get(
+@orders_router.get(
     "/orders/{order_id}",
     summary="Получить заказ по ID (v2, Redis-кэш)",
     status_code=status.HTTP_200_OK,
@@ -44,7 +45,7 @@ async def v2_get_order(
     return await order_cache.get_cached_order(order_id=order_id)
 
 
-@v2_router.post(
+@orders_router.post(
     "/orders",
     summary="Создать заказ (v2, с инвалидацией кэша)",
     status_code=status.HTTP_201_CREATED,
@@ -79,7 +80,7 @@ async def v2_create_order(
     return order
 
 
-@v2_router.delete(
+@orders_router.delete(
     "/orders/{order_id}",
     summary="Удалить заказ (v2, с инвалидацией кэша)",
     status_code=status.HTTP_204_NO_CONTENT,

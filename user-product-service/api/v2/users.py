@@ -3,15 +3,16 @@ from api.dependencies.services import (
     get_user_cache_service,
     get_user_write_service,
 )
-from api.v2.core import v2_router
 from database.schemas import UserCreate, UserOut, UserUpdate
-from fastapi import Depends, Request, status
+from fastapi import APIRouter, Depends, Request, status
 from services.a_user_service import AUserService
 from services.cache.a_user_cache_service import AUserCacheService
 
+users_router = APIRouter(prefix="/users")
 
-@v2_router.get(
-    "/users",
+
+@users_router.get(
+    "/",
     summary="Получить список пользователей (v2, Redis-кэш)",
     status_code=status.HTTP_200_OK,
     response_model=list[UserOut],
@@ -24,8 +25,8 @@ async def v2_get_users(
     return await user_cache.get_cached_users()
 
 
-@v2_router.get(
-    "/users/{user_id}",
+@users_router.get(
+    "/{user_id}",
     summary="Получить пользователя по ID (v2, Redis-кэш)",
     status_code=status.HTTP_200_OK,
     response_model=UserOut,
@@ -39,8 +40,8 @@ async def v2_get_user(
     return await user_cache.get_cached_user(user_id=user_id)
 
 
-@v2_router.post(
-    "/users",
+@users_router.post(
+    "/",
     summary="Создать пользователя (v2, с инвалидацией кэша)",
     status_code=status.HTTP_201_CREATED,
     response_model=UserOut,
@@ -57,8 +58,8 @@ async def create_user(
     return user
 
 
-@v2_router.put(
-    "/users/{user_id}",
+@users_router.put(
+    "/{user_id}",
     summary="Обновить пользователя (v2, с инвалидацией кэша)",
     status_code=status.HTTP_200_OK,
     response_model=UserOut,
@@ -80,8 +81,8 @@ async def v2_update_user(
     )
 
 
-@v2_router.delete(
-    "/users/{user_id}",
+@users_router.delete(
+    "/{user_id}",
     summary="Удалить пользователя (v2, с инвалидацией кэша)",
     status_code=status.HTTP_204_NO_CONTENT,
 )

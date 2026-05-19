@@ -1,4 +1,3 @@
-from api.auth.core import auth_router
 from api.dependencies.limiter import limiter
 from api.dependencies.services import get_auth_service, get_service_token_service
 from api.settings import settings
@@ -9,13 +8,15 @@ from database.schemas import (
     UserLogin,
     UserOut,
 )
-from fastapi import Cookie, Depends, Request, Response, status
+from fastapi import APIRouter, Cookie, Depends, Request, Response, status
 from services.a_auth_service import AAuthService
 from services.a_service_token_service import AServiceTokenService
 from services.exceptions import UnauthorizedError
 
+local_router = APIRouter(prefix="")
 
-@auth_router.post(
+
+@local_router.post(
     "/register",
     response_model=UserOut,
     status_code=status.HTTP_201_CREATED,
@@ -39,7 +40,7 @@ async def register(
     )
 
 
-@auth_router.post(
+@local_router.post(
     "/login",
     response_model=TokenPairResponse,
     status_code=status.HTTP_200_OK,
@@ -79,7 +80,7 @@ async def login(
     )
 
 
-@auth_router.post(
+@local_router.post(
     "/refresh",
     response_model=TokenPairResponse,
     status_code=status.HTTP_200_OK,
@@ -112,7 +113,7 @@ async def refresh_token(
     )
 
 
-@auth_router.post(
+@local_router.post(
     "/logout",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Выход пользователя",
@@ -130,7 +131,7 @@ async def logout(
     response.delete_cookie("refresh_token")
 
 
-@auth_router.get(
+@local_router.get(
     "/verify/{access_token}",
     response_model=AccessTokenPayload,
     status_code=status.HTTP_200_OK,

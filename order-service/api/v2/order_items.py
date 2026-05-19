@@ -5,16 +5,17 @@ from api.dependencies.services import (
     get_service_token_service,
 )
 from api.settings import settings
-from api.v2.core import v2_router
 from database.schemas import OrderItemCreate, OrderItemOut
-from fastapi import Depends, Request, status
+from fastapi import APIRouter, Depends, Request, status
 from services.a_order_item_service import AOrderItemService
 from services.a_service_token_service import AServiceTokenService
 from services.cache.a_order_item_cache_service import AOrderItemCacheService
 
+order_items_router = APIRouter(prefix="/order-items")
 
-@v2_router.get(
-    "/order-items",
+
+@order_items_router.get(
+    "/",
     summary="Получить список позиций заказов (v2, Redis-кэш)",
     status_code=status.HTTP_200_OK,
     response_model=list[OrderItemOut],
@@ -27,8 +28,8 @@ async def v2_get_order_items(
     return await order_item_cache.get_cached_order_items()
 
 
-@v2_router.get(
-    "/order-items/{order_item_id}",
+@order_items_router.get(
+    "/{order_item_id}",
     summary="Получить позицию заказа по ID (v2, Redis-кэш)",
     status_code=status.HTTP_200_OK,
     response_model=OrderItemOut,
@@ -42,8 +43,8 @@ async def v2_get_order_item(
     return await order_item_cache.get_cached_order_item(order_item_id=order_item_id)
 
 
-@v2_router.post(
-    "/order-items",
+@order_items_router.post(
+    "/",
     summary="Создать позицию заказа (v2, с инвалидацией кэша)",
     status_code=status.HTTP_201_CREATED,
     response_model=OrderItemOut,
@@ -69,8 +70,8 @@ async def v2_create_order_item(
     return order_item
 
 
-@v2_router.delete(
-    "/order-items/{order_item_id}",
+@order_items_router.delete(
+    "/{order_item_id}",
     summary="Удалить позицию заказа (v2, с инвалидацией кэша)",
     status_code=status.HTTP_204_NO_CONTENT,
 )

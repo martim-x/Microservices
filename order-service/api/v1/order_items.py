@@ -6,15 +6,16 @@ from api.dependencies.services import (
     get_service_token_service,
 )
 from api.settings import settings
-from api.v1.core import v1_router
 from database.schemas import OrderItemCreate, OrderItemOut
-from fastapi import Depends, Request, status
+from fastapi import APIRouter, Depends, Request, status
 from services.a_order_item_service import AOrderItemService
 from services.a_service_token_service import AServiceTokenService
 
+order_items_router = APIRouter(prefix="/order-items")
 
-@v1_router.get(
-    "/order-items",
+
+@order_items_router.get(
+    "/",
     summary="Получить список позиций заказов",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(cache_dep())],
@@ -28,8 +29,8 @@ async def v1_get_order_items(
     return await order_item_service.get_order_items()
 
 
-@v1_router.get(
-    "/order-items/{order_item_id}",
+@order_items_router.get(
+    "/{order_item_id}",
     summary="Получить позицию заказа по ID",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(cache_dep())],
@@ -44,8 +45,8 @@ async def v1_get_order_item(
     return await order_item_service.get_order_item_by_id(order_item_id=order_item_id)
 
 
-@v1_router.post(
-    "/order-items",
+@order_items_router.post(
+    "/",
     summary="Создать позицию заказа",
     status_code=status.HTTP_201_CREATED,
     response_model=OrderItemOut,
@@ -68,8 +69,8 @@ async def v1_create_order_item(
     )
 
 
-@v1_router.delete(
-    "/order-items/{order_item_id}",
+@order_items_router.delete(
+    "/{order_item_id}",
     summary="Удалить позицию заказа",
     status_code=status.HTTP_204_NO_CONTENT,
 )

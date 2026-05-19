@@ -6,15 +6,16 @@ from api.dependencies.services import (
     get_service_token_service,
 )
 from api.settings import settings
-from api.v1.core import v1_router
 from database.schemas import OrderCreate, OrderOut
-from fastapi import Depends, Request, status
+from fastapi import APIRouter, Depends, Request, status
 from services.a_order_service import AOrderService
 from services.a_service_token_service import AServiceTokenService
 
+orders_router = APIRouter(prefix="/orders")
 
-@v1_router.get(
-    "/orders",
+
+@orders_router.get(
+    "/",
     summary="Получить список заказов",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(cache_dep())],
@@ -28,8 +29,8 @@ async def v1_get_orders(
     return await order_service.get_orders()
 
 
-@v1_router.get(
-    "/orders/{order_id}",
+@orders_router.get(
+    "/{order_id}",
     summary="Получить заказ по ID",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(cache_dep())],
@@ -44,8 +45,8 @@ async def v1_get_order(
     return await order_service.get_order_by_id(order_id=order_id)
 
 
-@v1_router.post(
-    "/orders",
+@orders_router.post(
+    "/",
     summary="Создать заказ",
     status_code=status.HTTP_201_CREATED,
     response_model=OrderOut,
@@ -68,8 +69,8 @@ async def v1_create_order(
     )
 
 
-@v1_router.delete(
-    "/orders/{order_id}",
+@orders_router.delete(
+    "/{order_id}",
     summary="Удалить заказ",
     status_code=status.HTTP_204_NO_CONTENT,
 )

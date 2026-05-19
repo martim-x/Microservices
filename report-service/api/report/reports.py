@@ -1,9 +1,12 @@
-from api.report.core import report_router
-from database.schemas import ReportOut
+from api.dependencies.services import get_message_queue_service
+from fastapi import APIRouter, Depends
+from services.a_message_queue_service import AMessageQueueService
 
-reports: list[ReportOut] = []
+local_router = APIRouter(prefix="")
 
 
-@report_router.get("/reports")
-def get_reports():
-    return reports
+@local_router.get("/reports")
+def get_reports(
+    message_queue_service: AMessageQueueService = Depends(get_message_queue_service),
+):
+    return message_queue_service.generated_reports

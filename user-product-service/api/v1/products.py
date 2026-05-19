@@ -4,14 +4,15 @@ from api.dependencies.services import (
     get_product_read_service,
     get_product_write_service,
 )
-from api.v1.core import v1_router
 from database.schemas import ProductCreate, ProductOut, ProductUpdate
-from fastapi import Depends, Request, status
+from fastapi import APIRouter, Depends, Request, status
 from services.a_product_service import AProductService
 
+products_router = APIRouter(prefix="/products")
 
-@v1_router.get(
-    "/products",
+
+@products_router.get(
+    "/",
     summary="Получить список товаров",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(cache_dep())],
@@ -25,8 +26,8 @@ async def v1_get_products(
     return await product_service.get_products()
 
 
-@v1_router.get(
-    "/products/{product_id}",
+@products_router.get(
+    "/{product_id}",
     summary="Получить товар по ID",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(cache_dep())],
@@ -41,8 +42,8 @@ async def v1_get_product(
     return await product_service.get_product_by_id(product_id=product_id)
 
 
-@v1_router.post(
-    "/products",
+@products_router.post(
+    "/",
     summary="Создать товар",
     status_code=status.HTTP_201_CREATED,
     response_model=ProductOut,
@@ -56,8 +57,8 @@ async def v1_create_product(
     return await product_service.create_product(new_product=new_product)
 
 
-@v1_router.put(
-    "/products/{product_id}",
+@products_router.put(
+    "/{product_id}",
     summary="Обновить товар",
     status_code=status.HTTP_200_OK,
     response_model=ProductOut,
@@ -75,8 +76,8 @@ async def v1_update_product(
     )
 
 
-@v1_router.delete(
-    "/products/{product_id}",
+@products_router.delete(
+    "/{product_id}",
     summary="Удалить товар",
     status_code=status.HTTP_204_NO_CONTENT,
 )

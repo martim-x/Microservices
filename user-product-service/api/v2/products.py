@@ -3,15 +3,16 @@ from api.dependencies.services import (
     get_product_cache_service,
     get_product_write_service,
 )
-from api.v2.core import v2_router
 from database.schemas import ProductCreate, ProductOut, ProductUpdate
-from fastapi import Depends, Request, status
+from fastapi import APIRouter, Depends, Request, status
 from services.a_product_service import AProductService
 from services.cache.a_product_cache_service import AProductCacheService
 
+products_router = APIRouter(prefix="/products")
 
-@v2_router.get(
-    "/products",
+
+@products_router.get(
+    "/",
     summary="Получить список товаров (v2, Redis-кэш)",
     status_code=status.HTTP_200_OK,
     response_model=list[ProductOut],
@@ -24,8 +25,8 @@ async def v2_get_products(
     return await product_cache.get_cached_products()
 
 
-@v2_router.get(
-    "/products/{product_id}",
+@products_router.get(
+    "/{product_id}",
     summary="Получить товар по ID (v2, Redis-кэш)",
     status_code=status.HTTP_200_OK,
     response_model=ProductOut,
@@ -39,8 +40,8 @@ async def v2_get_product(
     return await product_cache.get_cached_product(product_id=product_id)
 
 
-@v2_router.post(
-    "/products",
+@products_router.post(
+    "/",
     summary="Создать товар (v2, с инвалидацией кэша)",
     status_code=status.HTTP_201_CREATED,
     response_model=ProductOut,
@@ -58,8 +59,8 @@ async def v2_create_product(
     return product
 
 
-@v2_router.put(
-    "/products/{product_id}",
+@products_router.put(
+    "/{product_id}",
     summary="Обновить товар (v2, с инвалидацией кэша)",
     status_code=status.HTTP_200_OK,
     response_model=ProductOut,
@@ -81,8 +82,8 @@ async def v2_update_product(
     )
 
 
-@v2_router.delete(
-    "/products/{product_id}",
+@products_router.delete(
+    "/{product_id}",
     summary="Удалить товар (v2, с инвалидацией кэша)",
     status_code=status.HTTP_204_NO_CONTENT,
 )

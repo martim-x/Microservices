@@ -4,14 +4,15 @@ from api.dependencies.services import (
     get_user_read_service,
     get_user_write_service,
 )
-from api.v1.core import v1_router
 from database.schemas import UserCreate, UserOut, UserUpdate
-from fastapi import Depends, Request, status
+from fastapi import APIRouter, Depends, Request, status
 from services.a_user_service import AUserService
 
+users_router = APIRouter(prefix="/users")
 
-@v1_router.get(
-    "/users",
+
+@users_router.get(
+    "/",
     summary="Получить список пользователей",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(cache_dep())],
@@ -25,8 +26,8 @@ async def v1_get_users(
     return await user_service.get_users()
 
 
-@v1_router.get(
-    "/users/{user_id}",
+@users_router.get(
+    "/{user_id}",
     summary="Получить пользователя по ID",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(cache_dep())],
@@ -41,8 +42,8 @@ async def v1_get_user(
     return await user_service.get_user_by_id(user_id=user_id)
 
 
-@v1_router.post(
-    "/users",
+@users_router.post(
+    "/",
     summary="Создать пользователя",
     status_code=status.HTTP_201_CREATED,
     response_model=UserOut,
@@ -56,8 +57,8 @@ async def v1_create_user(
     return await user_service.create_user(new_user=new_user)
 
 
-@v1_router.put(
-    "/users/{user_id}",
+@users_router.put(
+    "/{user_id}",
     summary="Обновить пользователя",
     status_code=status.HTTP_200_OK,
     response_model=UserOut,
@@ -75,8 +76,8 @@ async def v1_update_user(
     )
 
 
-@v1_router.delete(
-    "/users/{user_id}",
+@users_router.delete(
+    "/{user_id}",
     summary="Удалить пользователя",
     status_code=status.HTTP_204_NO_CONTENT,
 )

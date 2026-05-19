@@ -30,6 +30,8 @@ class AMessageQueueService:
         self._queue: AbstractQueue | None = None
         self._consumer_tag: str | None = None
 
+        self.generated_reports: list[ReportCreate] = []
+
     async def start(self) -> None:
         self._queue = await self.channel.declare_queue(
             self._routing_key,
@@ -120,6 +122,8 @@ class AMessageQueueService:
             await self._generate_report(report=report)
             if round(random()):
                 raise Exception("Упс... Произошла ошибка")
+
+            self.generated_reports.append(report)
             await message.ack()
 
             logger.info("Сообщение успешно обработано")

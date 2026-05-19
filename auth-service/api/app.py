@@ -2,9 +2,9 @@ import logging
 import time
 from contextlib import asynccontextmanager
 
-from api.auth.auth import auth_router
+from api.auth.core import auth_router
 from api.dependencies.limiter import rate_limit_handler
-from api.health.health import health_router
+from api.health.core import health_router
 from api.settings import settings
 from database.connection import SessionLocalMaster
 from database.schemas import ServiceTokenCreate

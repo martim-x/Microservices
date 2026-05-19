@@ -1,13 +1,14 @@
 from api.dependencies.limiter import limiter
 from api.dependencies.services import get_product_cache_service
-from api.internal.core import internal_router
 from database.schemas import ProductOut
-from fastapi import Depends, Request, status
+from fastapi import APIRouter, Depends, Request, status
 from services.cache.a_product_cache_service import AProductCacheService
 
+products_router = APIRouter(prefix="/products")
 
-@internal_router.get(
-    "/products/{product_id}",
+
+@products_router.get(
+    "/{product_id}",
     summary="Получить товар по ID (v2, Redis-кэш)",
     status_code=status.HTTP_200_OK,
     response_model=ProductOut,
