@@ -52,16 +52,14 @@ class Settings(BaseSettings):
     DB_VOLUME: str
 
     REPL_USER: str
-    REPL_PASSWORD: int
+    REPL_PASSWORD: str
 
     # ——— Redis —————————————————————————————————
 
     REDIS_IMAGE: str
     REDIS_VERSION: str
-    REDIS_HOST: str
-    REDIS_PORT_FROM: int
-    REDIS_PORT_TO: int
     REDIS_VOLUME: str
+    REDIS_URL: str
 
     # ——— RabbitMQ ——————————————————————————————
 
@@ -137,10 +135,6 @@ class Settings(BaseSettings):
         )
 
     # ——— SERVICES ——————————————————————————————————
-
-    @property
-    def REDIS_URL(self) -> str:
-        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT_TO}"
 
     @property
     def RABBITMQ_URL(self) -> str:
