@@ -82,7 +82,7 @@ async def _set_up_master_slave():
         await conn.execute(text("DROP PUBLICATION IF EXISTS app_pub;"))
         await conn.execute(text("""
                 CREATE PUBLICATION app_pub
-                FOR TABLE users, products, orders, order_items, auth
+                FOR TABLE users, products, orders, order_items, auth, service_tokens
                 WITH (publish = 'insert, update, delete');
                 """))
 
