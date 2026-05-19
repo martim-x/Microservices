@@ -106,7 +106,7 @@ async def _init_dbs():
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
-    # await _set_up_master_slave()
+    await _set_up_master_slave()
 
 
 async def _soft_init_dbs():
@@ -116,4 +116,4 @@ async def _soft_init_dbs():
     async with aengine_slave.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    # await _set_up_master_slave()
+    await _set_up_master_slave()
