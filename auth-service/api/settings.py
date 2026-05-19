@@ -144,10 +144,7 @@ class Settings(BaseSettings):
 
     @property
     def RABBITMQ_URL(self) -> str:
-        return (
-            f"amqp://{self.RABBITMQ_DEFAULT_USER}:{self.RABBITMQ_DEFAULT_PASS}"
-            f"@{self.RABBITMQ_HOST}:{self.RABBITMQ_PORT_AMQP_TO}/"
-        )
+        return f"amqp://{self.RABBITMQ_DEFAULT_USER}:{self.RABBITMQ_DEFAULT_PASS}@{self.RABBITMQ_HOST}:{self.RABBITMQ_PORT_AMQP_TO}/"
 
     @property
     def CONNECTION_FROM_SLAVE_TO_MASTER_URL(self) -> str:
@@ -163,22 +160,19 @@ class Settings(BaseSettings):
 
     @property
     def USER_PRODUCT_SERVICE_URL(self) -> str:
-        return (
-            f"http://{self.USER_PRODUCT_SERVICE_HOST}:"
-            f"{self.USER_PRODUCT_SERVICE_PORT}/api"
-        )
+        return f"http://{self.USER_PRODUCT_SERVICE_HOST}:{self.USER_PRODUCT_SERVICE_PORT}/api"
 
     @property
     def ORDER_SERVICE_URL(self) -> str:
-        return f"http://{self.ORDER_SERVICE_HOST}:" f"{self.ORDER_SERVICE_PORT}/api"
+        return f"http://{self.ORDER_SERVICE_HOST}:{self.ORDER_SERVICE_PORT}/api"
 
     @property
     def AUTH_SERVICE_URL(self) -> str:
-        return f"http://{self.AUTH_SERVICE_HOST}:" f"{self.AUTH_SERVICE_PORT}/api"
+        return f"http://{self.AUTH_SERVICE_HOST}:{self.AUTH_SERVICE_PORT}/api"
 
     @property
     def REPORT_SERVICE_URL(self) -> str:
-        return f"http://{self.REPORT_SERVICE_HOST}:" f"{self.REPORT_SERVICE_PORT}/api"
+        return f"http://{self.REPORT_SERVICE_HOST}:{self.REPORT_SERVICE_PORT}/api"
 
     # ——— DB, CACHE, MQ —————————————————————————
 

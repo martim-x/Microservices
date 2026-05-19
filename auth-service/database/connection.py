@@ -48,14 +48,14 @@ async def get_read_session():
 async def _set_up_master_slave():
     async with aengine_master.connect() as conn:
         conn = await conn.execution_options(isolation_level="AUTOCOMMIT")
-        await conn.execute(text("""
+        await conn.execute(text(f"""
                 DO $$
                 BEGIN
                     IF NOT EXISTS (
-                        SELECT 1 FROM pg_roles WHERE rolname = 'repl_user'
+                        SELECT 1 FROM pg_roles WHERE rolname = '{settings.REPL_USER}'
                     ) THEN
-                        CREATE ROLE repl_user
-                            WITH LOGIN REPLICATION PASSWORD '111';
+                        CREATE ROLE {settings.REPL_USER}
+                            WITH LOGIN REPLICATION PASSWORD '{settings.REPL_PASSWORD}';
                     END IF;
                 END
                 $$;
