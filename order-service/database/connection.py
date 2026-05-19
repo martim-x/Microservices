@@ -61,6 +61,11 @@ async def _set_up_master_slave():
                 $$;
                 """))
 
+    async with aengine_slave.connect() as conn:
+        conn = await conn.execution_options(isolation_level="AUTOCOMMIT")
+        await conn.execute(text("ALTER SUBSCRIPTION app_sub DISABLE;"))
+        await conn.execute(text("DROP SUBSCRIPTION IF EXISTS app_sub;"))
+
     async with aengine_master.connect() as conn:
         conn = await conn.execution_options(isolation_level="AUTOCOMMIT")
 
