@@ -12,7 +12,7 @@ products_router = APIRouter(prefix="/products")
 
 
 @products_router.get(
-    "/",
+    "",
     summary="Получить список товаров",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(cache_dep())],
@@ -43,7 +43,7 @@ async def v1_get_product(
 
 
 @products_router.post(
-    "/",
+    "",
     summary="Создать товар",
     status_code=status.HTTP_201_CREATED,
     response_model=ProductOut,

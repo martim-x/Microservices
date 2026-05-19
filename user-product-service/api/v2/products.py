@@ -12,7 +12,7 @@ products_router = APIRouter(prefix="/products")
 
 
 @products_router.get(
-    "/",
+    "",
     summary="Получить список товаров (v2, Redis-кэш)",
     status_code=status.HTTP_200_OK,
     response_model=list[ProductOut],
@@ -41,7 +41,7 @@ async def v2_get_product(
 
 
 @products_router.post(
-    "/",
+    "",
     summary="Создать товар (v2, с инвалидацией кэша)",
     status_code=status.HTTP_201_CREATED,
     response_model=ProductOut,

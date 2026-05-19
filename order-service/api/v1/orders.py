@@ -15,7 +15,7 @@ orders_router = APIRouter(prefix="/orders")
 
 
 @orders_router.get(
-    "/",
+    "",
     summary="Получить список заказов",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(cache_dep())],
@@ -46,7 +46,7 @@ async def v1_get_order(
 
 
 @orders_router.post(
-    "/",
+    "",
     summary="Создать заказ",
     status_code=status.HTTP_201_CREATED,
     response_model=OrderOut,

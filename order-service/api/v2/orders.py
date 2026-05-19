@@ -17,7 +17,7 @@ orders_router = APIRouter(prefix="/orders")
 
 
 @orders_router.get(
-    "/orders",
+    "",
     summary="Получить список заказов (v2, Redis-кэш)",
     status_code=status.HTTP_200_OK,
     response_model=list[OrderOut],
@@ -31,7 +31,7 @@ async def v2_get_orders(
 
 
 @orders_router.get(
-    "/orders/{order_id}",
+    "/{order_id}",
     summary="Получить заказ по ID (v2, Redis-кэш)",
     status_code=status.HTTP_200_OK,
     response_model=OrderOut,
@@ -46,7 +46,7 @@ async def v2_get_order(
 
 
 @orders_router.post(
-    "/orders",
+    "",
     summary="Создать заказ (v2, с инвалидацией кэша)",
     status_code=status.HTTP_201_CREATED,
     response_model=OrderOut,
@@ -81,7 +81,7 @@ async def v2_create_order(
 
 
 @orders_router.delete(
-    "/orders/{order_id}",
+    "/{order_id}",
     summary="Удалить заказ (v2, с инвалидацией кэша)",
     status_code=status.HTTP_204_NO_CONTENT,
 )

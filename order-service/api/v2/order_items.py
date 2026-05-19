@@ -15,7 +15,7 @@ order_items_router = APIRouter(prefix="/order-items")
 
 
 @order_items_router.get(
-    "/",
+    "",
     summary="Получить список позиций заказов (v2, Redis-кэш)",
     status_code=status.HTTP_200_OK,
     response_model=list[OrderItemOut],
@@ -44,7 +44,7 @@ async def v2_get_order_item(
 
 
 @order_items_router.post(
-    "/",
+    "",
     summary="Создать позицию заказа (v2, с инвалидацией кэша)",
     status_code=status.HTTP_201_CREATED,
     response_model=OrderItemOut,

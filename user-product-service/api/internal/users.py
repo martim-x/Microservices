@@ -43,7 +43,7 @@ async def v2_get_user(
 
 
 @users_router.post(
-    "/",
+    "",
     summary="Создать пользователя (v2, с инвалидацией кэша)",
     status_code=status.HTTP_201_CREATED,
     response_model=UserOut,

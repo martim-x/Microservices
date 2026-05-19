@@ -15,7 +15,7 @@ order_items_router = APIRouter(prefix="/order-items")
 
 
 @order_items_router.get(
-    "/",
+    "",
     summary="Получить список позиций заказов",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(cache_dep())],
@@ -46,7 +46,7 @@ async def v1_get_order_item(
 
 
 @order_items_router.post(
-    "/",
+    "",
     summary="Создать позицию заказа",
     status_code=status.HTTP_201_CREATED,
     response_model=OrderItemOut,

@@ -12,7 +12,7 @@ users_router = APIRouter(prefix="/users")
 
 
 @users_router.get(
-    "/",
+    "",
     summary="Получить список пользователей",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(cache_dep())],
@@ -43,7 +43,7 @@ async def v1_get_user(
 
 
 @users_router.post(
-    "/",
+    "",
     summary="Создать пользователя",
     status_code=status.HTTP_201_CREATED,
     response_model=UserOut,

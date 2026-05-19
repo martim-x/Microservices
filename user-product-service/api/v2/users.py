@@ -12,7 +12,7 @@ users_router = APIRouter(prefix="/users")
 
 
 @users_router.get(
-    "/",
+    "",
     summary="Получить список пользователей (v2, Redis-кэш)",
     status_code=status.HTTP_200_OK,
     response_model=list[UserOut],
@@ -41,7 +41,7 @@ async def v2_get_user(
 
 
 @users_router.post(
-    "/",
+    "",
     summary="Создать пользователя (v2, с инвалидацией кэша)",
     status_code=status.HTTP_201_CREATED,
     response_model=UserOut,
