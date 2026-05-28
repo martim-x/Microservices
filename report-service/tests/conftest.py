@@ -1,15 +1,14 @@
 import os
 
-import pytest
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
-
 TEST_ENV = {
+    # API
     "API_APP": "api.app:app",
+    # JWT
     "SECRET_KEY": "test-secret-key",
     "ALGORITHM": "HS256",
     "ACCESS_TOKEN_TTL": "15",
     "REFRESH_TOKEN_TTL": "30",
+    # DB
     "DB_DRIVENAME": "postgresql+asyncpg",
     "DB_ADMIN_MASTER": "postgres",
     "DB_ADMIN_PASS_MASTER": "postgres",
@@ -29,37 +28,40 @@ TEST_ENV = {
     "DB_VOLUME": "pg_data",
     "REPL_USER": "repl_user",
     "REPL_PASSWORD": "repl_password",
+    # Redis
     "REDIS_IMAGE": "redis",
     "REDIS_VERSION": "7",
     "REDIS_VOLUME": "redis_data",
     "REDIS_URL": "redis://localhost:6379/0",
+    # RabbitMQ
     "RABBITMQ_IMAGE": "rabbitmq",
     "RABBITMQ_VERSION": "3-management",
-    "RABBITMQ_HOST": "localhost",
-    "RABBITMQ_PORT_AMQP_FROM": "5672",
-    "RABBITMQ_PORT_AMQP_TO": "5672",
-    "RABBITMQ_PORT_HTTP_FROM": "15672",
-    "RABBITMQ_PORT_HTTP_TO": "15672",
+    "RABBITMQ_URL": "amqp://guest:guest@localhost:5672/",
     "RABBITMQ_DEFAULT_USER": "guest",
     "RABBITMQ_DEFAULT_PASS": "guest",
     "RABBITMQ_VOLUME": "rabbitmq_data",
     "RABBITMQ_MAX_RETRIES": "3",
     "RABBITMQ_ROUTING_KEY": "test.key",
     "RABBITMQ_ROUTING_KEY_ERROR": "test.key.error",
+    # Service token
     "SERVICE_SECRET_KEY": "super-secret-service-key",
     "SERVICE_ACCESS_TOKEN_TTL": "15",
+    # Service ports
     "ORDER_SERVICE_PORT": "8001",
     "USER_PRODUCT_SERVICE_PORT": "8002",
     "AUTH_SERVICE_PORT": "8003",
     "REPORT_SERVICE_PORT": "8004",
+    # Service hosts
     "AUTH_SERVICE_HOST": "localhost",
     "USER_PRODUCT_SERVICE_HOST": "localhost",
     "ORDER_SERVICE_HOST": "localhost",
     "REPORT_SERVICE_HOST": "localhost",
+    # Service names
     "AUTH_SERVICE_NAME": "auth-service",
     "USER_PRODUCT_SERVICE_NAME": "user-product-service",
     "ORDER_SERVICE_NAME": "order-service",
     "REPORT_SERVICE_NAME": "report-service",
+    # Service versions
     "AUTH_SERVICE_VERSION": "v1",
     "USER_PRODUCT_SERVICE_VERSION": "v1",
     "ORDER_SERVICE_VERSION": "v1",
@@ -69,20 +71,3 @@ TEST_ENV = {
 
 for key, value in TEST_ENV.items():
     os.environ.setdefault(key, value)
-
-
-@pytest.fixture(scope="session")
-def anyio_backend() -> str:
-    return "asyncio"
-
-
-@pytest.fixture
-def app() -> FastAPI:
-    from api.app import app as fastapi_app
-
-    return fastapi_app
-
-
-@pytest.fixture
-def client(app: FastAPI) -> TestClient:
-    return TestClient(app)
