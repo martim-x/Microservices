@@ -65,11 +65,7 @@ class Settings(BaseSettings):
 
     RABBITMQ_IMAGE: str
     RABBITMQ_VERSION: str
-    RABBITMQ_HOST: str
-    RABBITMQ_PORT_AMQP_FROM: int
-    RABBITMQ_PORT_AMQP_TO: int
-    RABBITMQ_PORT_HTTP_FROM: int
-    RABBITMQ_PORT_HTTP_TO: int
+    RABBITMQ_URL: str
     RABBITMQ_DEFAULT_USER: str
     RABBITMQ_DEFAULT_PASS: str
     RABBITMQ_VOLUME: str
@@ -135,10 +131,6 @@ class Settings(BaseSettings):
         )
 
     # ——— SERVICES ——————————————————————————————————
-
-    @property
-    def RABBITMQ_URL(self) -> str:
-        return f"amqp://{self.RABBITMQ_DEFAULT_USER}:{self.RABBITMQ_DEFAULT_PASS}@{self.RABBITMQ_HOST}:{self.RABBITMQ_PORT_AMQP_TO}/"
 
     @property
     def CONNECTION_FROM_SLAVE_TO_MASTER_URL(self) -> str:
