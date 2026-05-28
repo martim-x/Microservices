@@ -63,11 +63,9 @@ class Settings(BaseSettings):
 
     # ——— RabbitMQ ——————————————————————————————
 
+    RABBITMQ_URL: str
     RABBITMQ_IMAGE: str
     RABBITMQ_VERSION: str
-    RABBITMQ_URL: str
-    RABBITMQ_DEFAULT_USER: str
-    RABBITMQ_DEFAULT_PASS: str
     RABBITMQ_VOLUME: str
     RABBITMQ_MAX_RETRIES: int
     RABBITMQ_ROUTING_KEY: str
