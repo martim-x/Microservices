@@ -34,10 +34,7 @@ http_requests_in_progress = Gauge(
 )
 
 
-@metrics_router.get(
-    "/",
-    include_in_schema=False,
-)
+@metrics_router.get("")
 async def metrics() -> Response:
     return Response(
         content=generate_latest(),
