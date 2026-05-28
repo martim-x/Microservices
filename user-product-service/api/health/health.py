@@ -65,7 +65,7 @@ async def ready(request: Request, response: Response):
     "",
     status_code=status.HTTP_200_OK,
 )
-async def health_full(request: Request, response: Response):
+async def health(request: Request, response: Response):
     try:
         health = request.app.state.services["health"]
     except Exception:

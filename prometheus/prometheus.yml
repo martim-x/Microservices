@@ -1,0 +1,23 @@
+global:
+    scrape_interval: 15s
+
+scrape_configs:
+    - job_name: "auth-service"
+      static_configs:
+          - targets: ["${AUTH_SERVICE_HOST}:${AUTH_SERVICE_PORT}"]
+      metrics_path: "/metrics"
+
+    - job_name: "order-service"
+      static_configs:
+          - targets: ["${ORDER_SERVICE_HOST}:${ORDER_SERVICE_PORT}"]
+      metrics_path: "/metrics"
+
+    - job_name: "user-product-service"
+      static_configs:
+          - targets: ["${USER_PRODUCT_SERVICE_HOST}:${USER_PRODUCT_SERVICE_PORT}"]
+      metrics_path: "/metrics"
+
+    - job_name: "report-service"
+      static_configs:
+          - targets: ["${REPORT_SERVICE_HOST}:${REPORT_SERVICE_PORT}"]
+      metrics_path: "/metrics"
