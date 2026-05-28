@@ -1,15 +1,16 @@
-FROM alpine:3.19 AS builder
+FROM prom/prometheus:v3.11.3 AS prom
+
+FROM alpine:3.19
+
 RUN apk add --no-cache gettext
-RUN cp /usr/bin/envsubst /envsubst
-RUN ldd /usr/bin/envsubst || true
 
-FROM prom/prometheus:v3.11.3
+COPY --from=prom /bin/prometheus /bin/prometheus
+COPY prometheus.yml.template /etc/prometheus/prometheus.yml.template
+COPY entrypoint.sh /entrypoint.sh
 
-COPY --from=builder /envsubst /bin/envsubst
-COPY --from=builder /usr/lib/libintl.so.8 /usr/lib/libintl.so.8
-COPY prometheus.yml /etc/prometheus/prometheus.yml.template
+RUN chmod +x /entrypoint.sh \
+    && mkdir -p /prometheus /etc/prometheus
 
-USER root
+EXPOSE 9090
 
-ENTRYPOINT []
-CMD ["/bin/sh", "-c", "envsubst < /etc/prometheus/prometheus.yml.template > /etc/prometheus/prometheus.yml && /bin/prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus"]
+ENTRYPOINT ["/entrypoint.sh"]

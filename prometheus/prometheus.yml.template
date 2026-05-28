@@ -3,21 +3,21 @@ global:
 
 scrape_configs:
     - job_name: "auth-service"
+      metrics_path: /metrics
       static_configs:
           - targets: ["${AUTH_SERVICE_HOST}:${AUTH_SERVICE_PORT}"]
-      metrics_path: "/metrics"
 
     - job_name: "order-service"
+      metrics_path: /metrics
       static_configs:
           - targets: ["${ORDER_SERVICE_HOST}:${ORDER_SERVICE_PORT}"]
-      metrics_path: "/metrics"
 
     - job_name: "user-product-service"
+      metrics_path: /metrics
       static_configs:
           - targets: ["${USER_PRODUCT_SERVICE_HOST}:${USER_PRODUCT_SERVICE_PORT}"]
-      metrics_path: "/metrics"
 
     - job_name: "report-service"
+      metrics_path: /metrics
       static_configs:
           - targets: ["${REPORT_SERVICE_HOST}:${REPORT_SERVICE_PORT}"]
-      metrics_path: "/metrics"
