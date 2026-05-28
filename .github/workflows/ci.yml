@@ -2,15 +2,10 @@ name: Microservices CI
 
 on:
     push:
-        branches:
-            - prod
-            - dev
-        paths:
-            - ".github/workflows/ci.yml"
+        branches: [prod, dev]
 
     pull_request:
-        paths:
-            - ".github/workflows/ci.yml"
+        branches: [prod, dev]
 
 jobs:
     lint-type-security:

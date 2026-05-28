@@ -1,5 +1,5 @@
 import pytest
-from api.health.core import health_router
+from api.health.health import health_router
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
@@ -18,7 +18,7 @@ def build_health_app(health_state: dict | None = None) -> FastAPI:
 def test_live() -> None:
     client = TestClient(build_health_app())
 
-    response = client.get("/api/health/live")
+    response = client.get("/health/live")
 
     assert response.status_code == 200
     data = response.json()
@@ -42,7 +42,7 @@ def test_ready_success() -> None:
         )
     )
 
-    response = client.get("/api/health/ready")
+    response = client.get("/health/ready")
 
     assert response.status_code == 200
     data = response.json()
@@ -53,7 +53,7 @@ def test_ready_success() -> None:
 def test_ready_not_initialized() -> None:
     client = TestClient(build_health_app())
 
-    response = client.get("/api/health/ready")
+    response = client.get("/health/ready")
 
     assert response.status_code == 503
     assert response.json() == {
@@ -100,7 +100,7 @@ def test_ready_not_initialized() -> None:
 def test_ready_not_ready(health_state: dict) -> None:
     client = TestClient(build_health_app(health_state))
 
-    response = client.get("/api/health/ready")
+    response = client.get("/health/ready")
 
     assert response.status_code == 503
     data = response.json()
@@ -124,7 +124,7 @@ def test_full_success() -> None:
         )
     )
 
-    response = client.get("/api/health/full")
+    response = client.get("/health")
 
     assert response.status_code == 200
     data = response.json()
@@ -138,7 +138,7 @@ def test_full_success() -> None:
 def test_full_unhealthy_not_initialized() -> None:
     client = TestClient(build_health_app())
 
-    response = client.get("/api/health/full")
+    response = client.get("/health")
 
     assert response.status_code == 503
     assert response.json() == {

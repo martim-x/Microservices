@@ -2,7 +2,10 @@ from datetime import UTC, datetime
 
 from fastapi import APIRouter, Request, Response, status
 
-local_router = APIRouter(prefix="")
+health_router = APIRouter(
+    prefix="/health",
+    tags=["health"],
+)
 
 
 def _is_ready(health: dict) -> bool:
@@ -18,7 +21,7 @@ def _is_ready(health: dict) -> bool:
     return True
 
 
-@local_router.get(
+@health_router.get(
     "/live",
     status_code=status.HTTP_200_OK,
 )
@@ -29,7 +32,7 @@ async def live(request: Request):
     }
 
 
-@local_router.get(
+@health_router.get(
     "/ready",
     status_code=status.HTTP_200_OK,
 )
@@ -58,8 +61,8 @@ async def ready(request: Request, response: Response):
     }
 
 
-@local_router.get(
-    "/full",
+@health_router.get(
+    "",
     status_code=status.HTTP_200_OK,
 )
 async def health_full(request: Request, response: Response):

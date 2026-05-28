@@ -5,8 +5,9 @@ from contextlib import asynccontextmanager
 import redis.asyncio as aioredis
 from api.dependencies.limiter import rate_limit_handler
 from api.exchange.core import exchange_router
-from api.health.core import health_router
+from api.health.health import health_router
 from api.internal.core import internal_router
+from api.metrics.metrics import metrics_router
 from api.settings import settings
 from api.v1.core import v1_router
 from api.v2.core import v2_router
@@ -186,5 +187,12 @@ async def error_handler(request: Request, call_next):
 
 # ——— Routers ——————————————————————————————————————————————————————————————————
 
-for router in [exchange_router, health_router, internal_router, v1_router, v2_router]:
+for router in [
+    exchange_router,
+    health_router,
+    internal_router,
+    metrics_router,
+    v1_router,
+    v2_router,
+]:
     app.include_router(router)

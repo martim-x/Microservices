@@ -4,7 +4,8 @@ from contextlib import asynccontextmanager
 
 from api.auth.core import auth_router
 from api.dependencies.limiter import rate_limit_handler
-from api.health.core import health_router
+from api.health.health import health_router
+from api.metrics.metrics import metrics_router
 from api.settings import settings
 from database.connection import SessionLocalMaster
 from database.schemas import ServiceTokenCreate
@@ -168,5 +169,9 @@ async def error_handler(request: Request, call_next):
 # ——— Routers ——————————————————————————————————————————————————————————————————
 
 
-for router in [auth_router, health_router]:
+for router in [
+    auth_router,
+    health_router,
+    metrics_router,
+]:
     app.include_router(router)

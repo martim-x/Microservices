@@ -361,13 +361,13 @@ spec:
                             name: backend-secrets
                   readinessProbe:
                       httpGet:
-                          path: /api/health/live
+                          path: /health/live
                           port: 8002
                       initialDelaySeconds: 20
                       periodSeconds: 10
                   livenessProbe:
                       httpGet:
-                          path: /api/health/live
+                          path: /health/live
                           port: 8002
                       initialDelaySeconds: 30
                       periodSeconds: 15
@@ -415,13 +415,13 @@ spec:
                             name: backend-secrets
                   readinessProbe:
                       httpGet:
-                          path: /api/health/live
+                          path: /health/live
                           port: 8000
                       initialDelaySeconds: 20
                       periodSeconds: 10
                   livenessProbe:
                       httpGet:
-                          path: /api/health/live
+                          path: /health/live
                           port: 8000
                       initialDelaySeconds: 30
                       periodSeconds: 15
@@ -469,13 +469,13 @@ spec:
                             name: backend-secrets
                   readinessProbe:
                       httpGet:
-                          path: /api/health/live
+                          path: /health/live
                           port: 8001
                       initialDelaySeconds: 20
                       periodSeconds: 10
                   livenessProbe:
                       httpGet:
-                          path: /api/health/live
+                          path: /health/live
                           port: 8001
                       initialDelaySeconds: 30
                       periodSeconds: 15
@@ -523,13 +523,13 @@ spec:
                             name: backend-secrets
                   readinessProbe:
                       httpGet:
-                          path: /api/health/live
+                          path: /health/live
                           port: 8003
                       initialDelaySeconds: 20
                       periodSeconds: 10
                   livenessProbe:
                       httpGet:
-                          path: /api/health/live
+                          path: /health/live
                           port: 8003
                       initialDelaySeconds: 30
                       periodSeconds: 15

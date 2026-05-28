@@ -1,6 +1,5 @@
 import pytest
-from api.health.core import health_router
-from api.health.health import _is_ready
+from api.health.health import _is_ready, health_router
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
@@ -54,7 +53,7 @@ def test_is_ready_false(health: dict) -> None:
 def test_live() -> None:
     client = TestClient(build_app())
 
-    response = client.get("/api/health/live")
+    response = client.get("/health/live")
 
     assert response.status_code == 200
     data = response.json()
@@ -65,7 +64,7 @@ def test_live() -> None:
 def test_ready_without_health_state() -> None:
     client = TestClient(build_app())
 
-    response = client.get("/api/health/ready")
+    response = client.get("/health/ready")
 
     assert response.status_code == 503
     assert response.json() == {
@@ -87,7 +86,7 @@ def test_ready_success() -> None:
         )
     )
 
-    response = client.get("/api/health/ready")
+    response = client.get("/health/ready")
 
     assert response.status_code == 200
     data = response.json()
@@ -108,7 +107,7 @@ def test_ready_failed_dependency() -> None:
         )
     )
 
-    response = client.get("/api/health/ready")
+    response = client.get("/health/ready")
 
     assert response.status_code == 503
     data = response.json()
@@ -119,7 +118,7 @@ def test_ready_failed_dependency() -> None:
 def test_full_without_health_state() -> None:
     client = TestClient(build_app())
 
-    response = client.get("/api/health/full")
+    response = client.get("/health")
 
     assert response.status_code == 503
     assert response.json() == {
@@ -141,7 +140,7 @@ def test_full_healthy() -> None:
         )
     )
 
-    response = client.get("/api/health/full")
+    response = client.get("/health")
 
     assert response.status_code == 200
     data = response.json()
@@ -164,7 +163,7 @@ def test_full_unhealthy() -> None:
         )
     )
 
-    response = client.get("/api/health/full")
+    response = client.get("/health")
 
     assert response.status_code == 503
     data = response.json()

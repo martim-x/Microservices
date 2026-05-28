@@ -3,7 +3,8 @@ import time
 from contextlib import asynccontextmanager
 
 import aio_pika
-from api.health.core import health_router
+from api.health.health import health_router
+from api.metrics.metrics import metrics_router
 from api.report.core import report_router
 from api.settings import settings
 from fastapi import FastAPI, Request, Response
@@ -154,5 +155,9 @@ async def error_handler(request: Request, call_next):
         )
 
 
-for router in [health_router, report_router]:
+for router in [
+    health_router,
+    metrics_router,
+    report_router,
+]:
     app.include_router(router)
